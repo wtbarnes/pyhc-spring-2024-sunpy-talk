@@ -1,21 +1,22 @@
 ---
-title: An Example SunPy Presentation
-subtitle: Conference / Location / Date
+title: An Update on the SunPy Project
+subtitle: PyHC Spring Meeting / Virtual / 11 March 2024
 authors:
-- A. Speaker
-- B. Presenter
+- Will Barnes
+- Stuart Mumford
 - The SunPy Project
 institute:
-- Example University
-- NASA
+- AU/NASA GSFC
+- Aperio Software
 format:
   revealjs:
+    code-line-numbers: false
     margin: 0
     width: 100%
     height: 100%
     theme: [default, theme/sunpy-theme.scss]
-    logo: static/sunpy_logo_landscape.svg
-    footer: "[wtbarnes.github.io/sunpy-presentation-template](https://wtbarnes.github.io/sunpy-presentation-template)"
+    logo: static/sunpy_logo_landscape.png
+    footer: "[wtbarnes.github.io/pyhc-spring-2024-sunpy-talk](https://wtbarnes.github.io/pyhc-spring-2024-sunpy-talk)"
 title-slide-attributes: 
   data-background-image: static/sunpy_icon.svg
   data-background-position: -100% 50%
@@ -27,39 +28,277 @@ title-slide-attributes:
 #| eval: true
 import os
 os.environ["PARFIVE_HIDE_PROGRESS"] = "True"
+
+import sunpy
+sunpy.log.setLevel('ERROR')
 ```
 
-# The `sunpy` Package
+## What's New in The SunPy Project? {background-image="static/sunpy_icon.svg" background-size="70%" background-opacity="50%"}
 
----
+- v5.1 Released **21 November 2023**
+- v6.0 coming **May 2024**
+- New affiliated package: `sunkit-magex`
+- Updates to package template and packaging guide
+- pyOpenSci Partnership [![pyopensci](https://img.shields.io/badge/PyOpenSci-Peer%20Reviewed-success.svg)](https://github.com/pyOpenSci/software-submission/issues/147)
+  - Accepted 18 January 2024: [pyOpenSci/software-submission#147](https://github.com/pyOpenSci/software-submission/issues/147)
+  - Overhaul of affiliated package review system: [sunpy/sunpy.org#402](https://github.com/sunpy/sunpy.org/issues/402)
 
-![](static/tour.svg){height="750"}
+## `sunpy` v5.1 {background-image="static/sunpy_icon.svg" background-size="70%" background-opacity="50%"}
 
-## The package includes...
+- New features in v5.1 include:
+  - **Calculating the amount of solar eclipse**
+  - **Computations using SPICE kernels**
+  - Support for GONG Synoptic Data
+  - **Coordinate frames related to the Earth’s magnetic dipole**
+  - New Method for Determining Visibility of Helioprojective Coordinates
+  - Improved Support for WISPR Data
+- By the numbers:
+  - Since v5.0: 361 commits, 27 issues closed, 102 pull requests merged
+  - 19 contributors, **7 of whom are new contributors**
+- Full details here: [docs.sunpy.org/en/stable/whatsnew](https://docs.sunpy.org/en/stable/whatsnew)
 
-- Data search and retrieval
-- Data structures for timeseries and image data
-- Coordinate frames and conversions
-- and much more!
-
-## Another slide with a plot inline
+## New Features: Calculating the Amount of a Solar Eclipse
 
 ```{python}
-#| fig-align: center
-import sunpy.map
-import sunpy.data.sample
+# | echo: false
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib.dates import DateFormatter
 
-m = sunpy.map.Map(sunpy.data.sample.AIA_171_IMAGE)
-m.peek()
+import astropy.units as u
+from astropy.coordinates import EarthLocation, solar_system_ephemeris
+from astropy.time import Time
+from astropy.visualization import time_support
+
+from sunpy.coordinates import sun
+
+
+def calculate_eclipse_time(amount, amount_minimum, times):
+    # Calculate the start/end points of partial/total solar eclipse
+    partial = np.flatnonzero(amount > 0)
+    if len(partial) > 0:
+        print("Eclipse detected:")
+        start_partial, end_partial = times[partial[[0, -1]]]
+        print(f"  Partial solar eclipse starts at {start_partial} UTC")
+
+        total = np.flatnonzero(amount_minimum == 1)
+        if len(total) > 0:
+            start_total, end_total = times[total[[0, -1]]]
+            print(f"  Total solar eclipse starts at {start_total} UTC\n"
+                  f"  Total solar eclipse ends at {end_total} UTC")
+        print(f"  Partial solar eclipse ends at {end_partial} UTC")
+
+
+def plot_eclipse_timeseries(amount, times):
+    # Plot the eclipse timeseries
+    fig = plt.figure(layout="constrained")
+    ax = fig.add_subplot()
+    ax.plot(times.datetime64, amount)
+
+    ax.set_ylim(0, 105)
+
+    ax.xaxis.set_major_formatter(DateFormatter('%I:%M %p', tz='US/Eastern'))
+    ax.tick_params('x', rotation=45)
+
+    #ax.set_title(f"{time.strftime('%Y %B %d')}")
+    ax.set_ylabel("Eclipse percentage")
+    ax.set_xlabel("Local time (US/Eastern)")
+    ax.grid()
 ```
 
-## You can also include code
-
-The code below shows how to create a coordinate in the same frame as the map shown before.
 ```{python}
 # | echo: true
-import astropy.coordinates
-import astropy.units as u
-my_coord = astropy.coordinates.SkyCoord(Tx=300*u.arcsec, Ty=500*u.arcsec, frame=m.coordinate_frame)
-print(my_coord)
+# | code-line-numbers: "|2,8,9"
+from astropy.coordinates import EarthLocation, solar_system_ephemeris
+from sunpy.coordinates.sun import eclipse_amount
+
+location = EarthLocation.from_geodetic(-77.6088*u.deg, 43.1566*u.deg)  # Rochester, NY
+times = Time('2024-04-08 19:22') + np.arange(-120, 121, 1/60) * u.min
+observer = location.get_itrs(times)
+
+with solar_system_ephemeris.set('de440s'):
+    amount = eclipse_amount(observer)
 ```
+
+```{python}
+# | echo: false
+# | fig-align: center
+# | output-location: fragment
+plot_eclipse_timeseries(amount, times)
+with solar_system_ephemeris.set('de440s'):
+    amount_minimum = eclipse_amount(observer, moon_radius='minimum')
+calculate_eclipse_time(amount, amount_minimum, times)
+```
+
+## New Features: Computations Using SPICE Kernels
+
+- [SPICE](https://naif.jpl.nasa.gov/naif/)--used by space missions to describe the locations of spacecraft, time-varying orientations of reference frames
+- `sunpy.coordinates.spice`--use `SkyCoord` API to perform SPICE computations
+- Depends on `spiceypy`
+
+```{python}
+# | echo: false
+# | output: false
+from astropy.coordinates import SkyCoord
+from sunpy.data import cache
+from sunpy.time import parse_time
+
+kernel_urls = [
+    "ck/solo_ANC_soc-sc-fof-ck_20180930-21000101_V03.bc",
+    "ck/solo_ANC_soc-stix-ck_20180930-21000101_V03.bc",
+    "ck/solo_ANC_soc-flown-att_20221011T142135-20221012T141817_V01.bc",
+    "fk/solo_ANC_soc-sc-fk_V09.tf",
+    "fk/solo_ANC_soc-sci-fk_V08.tf",
+    "ik/solo_ANC_soc-stix-ik_V02.ti",
+    "lsk/naif0012.tls",
+    "pck/pck00010.tpc",
+    "sclk/solo_ANC_soc-sclk_20231015_V01.tsc",
+    "spk/de421.bsp",
+    "spk/solo_ANC_soc-orbit-stp_20200210-20301120_280_V1_00288_V01.bsp",
+]
+kernel_urls = [f"http://spiftp.esac.esa.int/data/SPICE/SOLAR-ORBITER/kernels/{url}"
+               for url in kernel_urls]
+kernel_files = [cache.download(url) for url in kernel_urls]
+```
+```{python}
+# | echo: true
+# | output-location: column-fragment
+# | code-line-numbers: "|1,3,4,6,7,8"
+from sunpy.coordinates import spice
+
+spice.initialize(kernel_files)
+spice.install_frame('IAU_SUN')
+
+obstime = parse_time('2022-10-12') + np.arange(720) * u.min
+spacecraft = spice.get_body('Solar Orbiter',
+                            obstime,
+                            spice_frame='SOLO_HEEQ')
+print(spacecraft[:1])
+
+with time_support():
+  plt.plot(obstime, spacecraft.distance.to('AU'))
+plt.ylabel('Radial Distance from Sun Center [AU]');
+```
+
+## New Features: Computations Using SPICE Kernels
+
+```{python}
+# | echo: true
+# | output-location: column-fragment
+spacecraft_gae = spacecraft.transform_to("spice_SOLO_GAE")
+print(spacecraft_gae[:4])
+```
+```{python}
+# | echo: true
+# | output-location: column-fragment
+# 0 degrees is anti-Sun in the STIX frame
+stix_ils = SkyCoord(np.repeat(0*u.deg, len(obstime)),
+                    np.repeat(0*u.deg, len(obstime)),
+                    frame='spice_SOLO_STIX_ILS', obstime=obstime)
+print(stix_ils[:4])
+```
+```{python}
+# | echo: true
+# | output-location: column-fragment
+stix_fov = spice.get_fov('SOLO_STIX', obstime[0])
+print(stix_fov)
+```
+
+```{python}
+# | echo: true
+# | output-location: column-fragment
+stix_fov_hpc = stix_fov.to_helioprojective() 
+print(stix_fov_hpc)
+```
+
+## New Features: Coordinate Frames Related to Earth's $B$-field
+```{python}
+from astropy.constants import R_earth
+from astropy.coordinates import CartesianRepresentation
+```
+- Three new frames: `Geomagnetic` (MAG), `SolarMagnetic` (SM), and `GeocentricSolarMagnetospheric` (GSM)
+```{python}
+# | echo: true
+# | code-line-numbers: "|1,4,5,6|7,8,9"
+from sunpy.coordinates import Geomagnetic, SolarMagnetic, GeocentricSolarMagnetospheric
+
+obstime = Time('1996-08-28 16:46:00', scale='tt')
+mag_frame = Geomagnetic(obstime=obstime)
+sm_frame = SolarMagnetic(obstime=obstime)
+gsm_frame = GeocentricSolarMagnetospheric(obstime=obstime)
+coord = SkyCoord(CartesianRepresentation([3.3344557, 6.0215108, 2.5732497]*R_earth), frame=mag_frame)
+coord = SkyCoord(CartesianRepresentation([3.3601371, 6.0071917, 2.5733108]*R_earth), frame=sm_frame)
+coord = SkyCoord(CartesianRepresentation([4.0378470, 6.0071917, 1.2681645]*R_earth), frame=gsm_frame)
+```
+- Depend on orientation of Earth’s magnetic dipole, as defined by International Geomagnetic Reference Field (IGRF) model
+- Different magnetic models can be selected when defining the frame, default is IGRF-13
+```{python}
+# | echo: true
+# | output-location: fragment
+print(mag_frame.magnetic_model)
+```
+```{python}
+# | echo: true
+# | output-location: fragment
+mag_frame_12 = Geomagnetic(obstime=obstime, magnetic_model='igrf12')
+print(mag_frame_12.magnetic_model)
+```
+
+## New Features: Coordinate Frames Related to Earth's $B$-field {background-image="static/sunpy-coordinate-frames.png" background-size="65%"}
+
+## Introducing `sunkit-magex`
+
+:::: {.columns}
+
+::: {.column width="5%"}
+:::
+
+::: {.column width="35%"}
+![](static/pfsspy-badman-example.png)
+:::
+
+::: {.column width="60%"}
+- `pfsspy`--*de facto* way to do PFSS extrapolations in Python
+- **`pfsspy` is no longer maintained**
+  - Archived, no new features or bugfixes
+  - Already decaying: [sunpy/sunpy#7313](https://github.com/sunpy/sunpy/issues/7313)
+- `sunkit-magex` package
+  - SunPy-affiliated package maintained by the SunPy Project
+  - Currently "just a fork" of `pfsspy`
+  - Future: interface to other extrapolation methods, e.g. NLFF, other PF methods
+- `streamtracer` package now also under SunPy Project: [github.com/sunpy/streamtracer](https://github.com/sunpy/streamtracer)
+:::
+
+::::
+
+::: {.aside}
+[Badman et al. (2019)](https://iopscience.iop.org/article/10.3847/1538-4365/ab4da7)
+:::
+
+## The SunPy Package Template
+
+- Updated OpenAstronomy packaging guide: [packaging-guide.openastronomy.org](https://packaging-guide.openastronomy.org)
+  - Narrative documentation describing how to structure a package
+  - `cookiecutter` template
+- OpenAstronomy template + SunPy specific functionality: [github.com/sunpy/package-template](https://github.com/sunpy/package-template)
+  - Enable automatic packaging, linting and other configuration updates over all SunPy-maintained packages.
+  - [`cruft`](https://cruft.github.io/) to [automate updates](https://github.com/sunpy/sunkit-magex/pull/16) to packages when template changes
+  - ```shell
+  cruft create github.com/sunpy/package-template
+  ```
+- Differences with pyOpenSci?
+  - More opinionated, specific choices
+  - Everything "looks like" `sunpy`/`astropy`
+
+## Summary  {background-image="static/sunpy_icon.svg" background-size="70%" background-opacity="50%"}
+
+- v5.1 Released **21 November 2023**
+  - **Calculating the amount of solar eclipse**
+  - **Computations using SPICE kernels**
+  - **Coordinate frames related to the Earth’s magnetic dipole**
+- v6.0 coming **May 2024**
+- New affiliated package: `sunkit-magex`
+- Updates to package template and packaging guide
+- pyOpenSci Partnership [![pyopensci](https://img.shields.io/badge/PyOpenSci-Peer%20Reviewed-success.svg)](https://github.com/pyOpenSci/software-submission/issues/147)
+  - Accepted 18 January 2024: [pyOpenSci/software-submission#147](https://github.com/pyOpenSci/software-submission/issues/147)
+  - Overhaul of affiliated package review system: [sunpy/sunpy.org#402](https://github.com/sunpy/sunpy.org/issues/402)

@@ -1,1 +1,2 @@
-sunpy[map]
+jplephem
+sunpy[map,spice]

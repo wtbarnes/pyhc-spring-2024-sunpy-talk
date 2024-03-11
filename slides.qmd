@@ -37,19 +37,19 @@ sunpy.log.setLevel('ERROR')
 
 - v5.1 Released **21 November 2023**
 - v6.0 coming **May 2024**
-- New affiliated package: `sunkit-magex`
+- New affiliated package: `sunkit-magex` (a successor to `pfsspy`)
 - Updates to package template and packaging guide
 - pyOpenSci Partnership [![pyopensci](https://img.shields.io/badge/PyOpenSci-Peer%20Reviewed-success.svg)](https://github.com/pyOpenSci/software-submission/issues/147)
   - Accepted 18 January 2024: [pyOpenSci/software-submission#147](https://github.com/pyOpenSci/software-submission/issues/147)
-  - Overhaul of affiliated package review system: [sunpy/sunpy.org#402](https://github.com/sunpy/sunpy.org/issues/402)
+  - Upcoming overhaul of affiliated package process: [sunpy/sunpy.org#402](https://github.com/sunpy/sunpy.org/issues/402)
 
 ## `sunpy` v5.1 {background-image="static/sunpy_icon.svg" background-size="70%" background-opacity="50%"}
 
 - New features in v5.1 include:
   - **Calculating the amount of solar eclipse**
   - **Computations using SPICE kernels**
-  - Support for GONG Synoptic Data
   - **Coordinate frames related to the Earth’s magnetic dipole**
+  - Support for GONG Synoptic Data
   - New Method for Determining Visibility of Helioprojective Coordinates
   - Improved Support for WISPR Data
 - By the numbers:
@@ -93,9 +93,9 @@ def plot_eclipse_timeseries(amount, times):
     # Plot the eclipse timeseries
     fig = plt.figure(layout="constrained")
     ax = fig.add_subplot()
-    ax.plot(times.datetime64, amount)
+    ax.plot(times.datetime64, amount, linewidth=2)
 
-    ax.set_ylim(0, 105)
+    ax.set_ylim(-2, 105)
 
     ax.xaxis.set_major_formatter(DateFormatter('%I:%M %p', tz='US/Eastern'))
     ax.tick_params('x', rotation=45)
@@ -163,7 +163,7 @@ kernel_files = [cache.download(url) for url in kernel_urls]
 ```{python}
 # | echo: true
 # | output-location: column-fragment
-# | code-line-numbers: "|1,3,4,6,7,8"
+# | code-line-numbers: "|1,3,4,6,7,8,9"
 from sunpy.coordinates import spice
 
 spice.initialize(kernel_files)
@@ -279,16 +279,17 @@ print(mag_frame_12.magnetic_model)
 
 - Updated OpenAstronomy packaging guide: [packaging-guide.openastronomy.org](https://packaging-guide.openastronomy.org)
   - Narrative documentation describing how to structure a package
-  - `cookiecutter` template
-- OpenAstronomy template + SunPy specific functionality: [github.com/sunpy/package-template](https://github.com/sunpy/package-template)
-  - Enable automatic packaging, linting and other configuration updates over all SunPy-maintained packages.
   - [`cruft`](https://cruft.github.io/) to [automate updates](https://github.com/sunpy/sunkit-magex/pull/16) to packages when template changes
   - ```shell
-  cruft create github.com/sunpy/package-template
+  cruft create github.com/OpenAstronomy/packaging-guide
   ```
+
 - Differences with pyOpenSci?
   - More opinionated, specific choices
   - Everything "looks like" `sunpy`/`astropy`
+  
+- OpenAstronomy template + SunPy specific functionality: [github.com/sunpy/package-template](https://github.com/sunpy/package-template)
+  - Enable automatic packaging, linting and other configuration updates over all SunPy-maintained packages.
 
 ## Summary  {background-image="static/sunpy_icon.svg" background-size="70%" background-opacity="50%"}
 

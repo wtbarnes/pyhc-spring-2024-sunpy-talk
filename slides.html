@@ -423,12 +423,12 @@ The SunPy Project
 <ul>
 <li>v5.1 Released <strong>21 November 2023</strong></li>
 <li>v6.0 coming <strong>May 2024</strong></li>
-<li>New affiliated package: <code>sunkit-magex</code></li>
+<li>New affiliated package: <code>sunkit-magex</code> (a successor to <code>pfsspy</code>)</li>
 <li>Updates to package template and packaging guide</li>
 <li>pyOpenSci Partnership <a href="https://github.com/pyOpenSci/software-submission/issues/147"><img data-src="https://img.shields.io/badge/PyOpenSci-Peer%20Reviewed-success.svg" alt="pyopensci"></a>
 <ul>
 <li>Accepted 18 January 2024: <a href="https://github.com/pyOpenSci/software-submission/issues/147">pyOpenSci/software-submission#147</a></li>
-<li>Overhaul of affiliated package review system: <a href="https://github.com/sunpy/sunpy.org/issues/402">sunpy/sunpy.org#402</a></li>
+<li>Upcoming overhaul of affiliated package process: <a href="https://github.com/sunpy/sunpy.org/issues/402">sunpy/sunpy.org#402</a></li>
 </ul></li>
 </ul>
 </section>
@@ -439,8 +439,8 @@ The SunPy Project
 <ul>
 <li><strong>Calculating the amount of solar eclipse</strong></li>
 <li><strong>Computations using SPICE kernels</strong></li>
-<li>Support for GONG Synoptic Data</li>
 <li><strong>Coordinate frames related to the Earth’s magnetic dipole</strong></li>
+<li>Support for GONG Synoptic Data</li>
 <li>New Method for Determining Visibility of Helioprojective Coordinates</li>
 <li>Improved Support for WISPR Data</li>
 </ul></li>
@@ -454,7 +454,7 @@ The SunPy Project
 </section>
 <section id="new-features-calculating-the-amount-of-a-solar-eclipse" class="slide level2">
 <h2>New Features: Calculating the Amount of a Solar Eclipse</h2>
-<div id="ef0dc101" class="cell" data-execution_count="3">
+<div id="5c28d918" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb1" data-code-line-numbers="|2,8,9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href=""></a><span class="im">from</span> astropy.coordinates <span class="im">import</span> EarthLocation, solar_system_ephemeris</span>
 <span id="cb1-2"><a href=""></a><span class="im">from</span> sunpy.coordinates.sun <span class="im">import</span> eclipse_amount</span>
 <span id="cb1-3"><a href=""></a></span>
@@ -465,7 +465,7 @@ The SunPy Project
 <span id="cb1-8"><a href=""></a><span class="cf">with</span> solar_system_ephemeris.<span class="bu">set</span>(<span class="st">'de440s'</span>):</span>
 <span id="cb1-9"><a href=""></a>    amount <span class="op">=</span> eclipse_amount(observer)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="6408d2dd" class="cell" data-execution_count="4">
+<div id="211c2a7e" class="cell" data-execution_count="4">
 <div class="cell-output cell-output-stdout">
 <pre><code>Eclipse detected:
   Partial solar eclipse starts at 2024-04-08 18:07:04.000 UTC
@@ -489,9 +489,9 @@ The SunPy Project
 <li><code>sunpy.coordinates.spice</code>–use <code>SkyCoord</code> API to perform SPICE computations</li>
 <li>Depends on <code>spiceypy</code></li>
 </ul>
-<div id="40838d4d" class="cell columns column-output-location" data-execution_count="6">
+<div id="f3930fff" class="cell columns column-output-location" data-execution_count="6">
 <div class="column">
-<div class="sourceCode cell-code" id="cb3" data-code-line-numbers="|1,3,4,6,7,8"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href=""></a><span class="im">from</span> sunpy.coordinates <span class="im">import</span> spice</span>
+<div class="sourceCode cell-code" id="cb3" data-code-line-numbers="|1,3,4,6,7,8,9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href=""></a><span class="im">from</span> sunpy.coordinates <span class="im">import</span> spice</span>
 <span id="cb3-2"><a href=""></a></span>
 <span id="cb3-3"><a href=""></a>spice.initialize(kernel_files)</span>
 <span id="cb3-4"><a href=""></a>spice.install_frame(<span class="st">'IAU_SUN'</span>)</span>
@@ -522,7 +522,7 @@ The SunPy Project
 </section>
 <section id="new-features-computations-using-spice-kernels-1" class="slide level2">
 <h2>New Features: Computations Using SPICE Kernels</h2>
-<div id="0ef80c73" class="cell columns column-output-location" data-execution_count="7">
+<div id="f4b3d157" class="cell columns column-output-location" data-execution_count="7">
 <div class="column">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="" aria-hidden="true" tabindex="-1"></a>spacecraft_gae <span class="op">=</span> spacecraft.transform_to(<span class="st">"spice_SOLO_GAE"</span>)</span>
 <span id="cb5-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(spacecraft_gae[:<span class="dv">4</span>])</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -537,7 +537,7 @@ The SunPy Project
 </div>
 </div>
 </div>
-<div id="8f79823b" class="cell columns column-output-location" data-execution_count="8">
+<div id="aa6ef096" class="cell columns column-output-location" data-execution_count="8">
 <div class="column">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="co"># 0 degrees is anti-Sun in the STIX frame</span></span>
 <span id="cb7-2"><a href="" aria-hidden="true" tabindex="-1"></a>stix_ils <span class="op">=</span> SkyCoord(np.repeat(<span class="dv">0</span><span class="op">*</span>u.deg, <span class="bu">len</span>(obstime)),</span>
@@ -552,7 +552,7 @@ The SunPy Project
 </div>
 </div>
 </div>
-<div id="cfec0a30" class="cell columns column-output-location" data-execution_count="9">
+<div id="ce2f5249" class="cell columns column-output-location" data-execution_count="9">
 <div class="column">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="" aria-hidden="true" tabindex="-1"></a>stix_fov <span class="op">=</span> spice.get_fov(<span class="st">'SOLO_STIX'</span>, obstime[<span class="dv">0</span>])</span>
 <span id="cb9-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(stix_fov)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -564,7 +564,7 @@ The SunPy Project
 </div>
 </div>
 </div>
-<div id="2424c6cf" class="cell columns column-output-location" data-execution_count="10">
+<div id="b32affe6" class="cell columns column-output-location" data-execution_count="10">
 <div class="column">
 <div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="" aria-hidden="true" tabindex="-1"></a>stix_fov_hpc <span class="op">=</span> stix_fov.to_helioprojective() </span>
 <span id="cb11-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(stix_fov_hpc)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
@@ -583,7 +583,7 @@ The SunPy Project
 <ul>
 <li>Three new frames: <code>Geomagnetic</code> (MAG), <code>SolarMagnetic</code> (SM), and <code>GeocentricSolarMagnetospheric</code> (GSM)</li>
 </ul>
-<div id="e403f55b" class="cell" data-execution_count="12">
+<div id="9f870cc6" class="cell" data-execution_count="12">
 <div class="sourceCode cell-code" id="cb13" data-code-line-numbers="|1,4,5,6|7,8,9"><pre class="sourceCode numberSource python number-lines code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href=""></a><span class="im">from</span> sunpy.coordinates <span class="im">import</span> Geomagnetic, SolarMagnetic, GeocentricSolarMagnetospheric</span>
 <span id="cb13-2"><a href=""></a></span>
 <span id="cb13-3"><a href=""></a>obstime <span class="op">=</span> Time(<span class="st">'1996-08-28 16:46:00'</span>, scale<span class="op">=</span><span class="st">'tt'</span>)</span>
@@ -598,7 +598,7 @@ The SunPy Project
 <li>Depend on orientation of Earth’s magnetic dipole, as defined by International Geomagnetic Reference Field (IGRF) model</li>
 <li>Different magnetic models can be selected when defining the frame, default is IGRF-13</li>
 </ul>
-<div id="db7086da" class="cell" data-execution_count="13">
+<div id="d4198b58" class="cell" data-execution_count="13">
 <div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(mag_frame.magnetic_model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <div class="cell fragment" data-execution_count="13">
@@ -606,7 +606,7 @@ The SunPy Project
 <pre><code>igrf13</code></pre>
 </div>
 </div>
-<div id="40071609" class="cell" data-execution_count="14">
+<div id="16ae4a2e" class="cell" data-execution_count="14">
 <div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="" aria-hidden="true" tabindex="-1"></a>mag_frame_12 <span class="op">=</span> Geomagnetic(obstime<span class="op">=</span>obstime, magnetic_model<span class="op">=</span><span class="st">'igrf12'</span>)</span>
 <span id="cb16-2"><a href="" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(mag_frame_12.magnetic_model)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
@@ -654,18 +654,17 @@ The SunPy Project
 <li>Updated OpenAstronomy packaging guide: <a href="https://packaging-guide.openastronomy.org">packaging-guide.openastronomy.org</a>
 <ul>
 <li>Narrative documentation describing how to structure a package</li>
-<li><code>cookiecutter</code> template</li>
-</ul></li>
-<li>OpenAstronomy template + SunPy specific functionality: <a href="https://github.com/sunpy/package-template">github.com/sunpy/package-template</a>
-<ul>
-<li>Enable automatic packaging, linting and other configuration updates over all SunPy-maintained packages.</li>
 <li><a href="https://cruft.github.io/"><code>cruft</code></a> to <a href="https://github.com/sunpy/sunkit-magex/pull/16">automate updates</a> to packages when template changes</li>
-<li><pre class="shell"><code>cruft create github.com/sunpy/package-template</code></pre></li>
+<li><pre class="shell"><code>cruft create github.com/OpenAstronomy/packaging-guide</code></pre></li>
 </ul></li>
 <li>Differences with pyOpenSci?
 <ul>
 <li>More opinionated, specific choices</li>
 <li>Everything “looks like” <code>sunpy</code>/<code>astropy</code></li>
+</ul></li>
+<li>OpenAstronomy template + SunPy specific functionality: <a href="https://github.com/sunpy/package-template">github.com/sunpy/package-template</a>
+<ul>
+<li>Enable automatic packaging, linting and other configuration updates over all SunPy-maintained packages.</li>
 </ul></li>
 </ul>
 </section>
